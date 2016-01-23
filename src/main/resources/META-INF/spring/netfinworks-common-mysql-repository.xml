@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.springframework.org/schema/context
+	   http://www.springframework.org/schema/context/spring-context.xsd"
+       default-autowire="byName">
+    <context:annotation-config />
+    <!-- 序列DAO -->
+    <bean id="unitySequenceDAO" class="com.netfinworks.common.mysql.repository.dao.SequenceDAOImpl">
+        <property name="dataSource" ref="sequenceDataSource" />
+    </bean>
+	<!-- 序列仓储 -->
+	<bean id="unitySequenceRepository" class="com.netfinworks.common.mysql.repository.SequenceRepositoryImpl" />
+
+
+
+	<!-- transcation -->
+	<bean id="unitySequenceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="sequenceDataSource" />
+	</bean>
+
+	<bean name="unitySequenceTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+		<property name="transactionManager" ref="unitySequenceTransactionManager" />
+	</bean>
+
+	<!-- 序列异步刷新线程池 -->
+	<bean id="unitySequenceFlushTreadPoolTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<!-- 核心线程数，默认为1 -->
+		<property name="corePoolSize" value="1" />
+		<!-- 最大线程数，默认为Integer.MAX_VALUE -->
+		<property name="maxPoolSize" value="1" />
+		<!-- 队列最大长度，默认为Integer.MAX_VALUE -->
+		<property name="queueCapacity" value="1000" />
+		<!-- 线程池维护线程所允许的空闲时间，默认为60s -->
+		<property name="keepAliveSeconds" value="300" />
+		<!-- 线程池对拒绝任务（超过待处理队列长度）的处理策略 -->
+		<property name="rejectedExecutionHandler">
+			<!-- AbortPolicy:直接抛出java.util.concurrent.RejectedExecutionException异常 -->
+			<!-- CallerRunsPolicy:若已达到待处理队列长度，将由主线程直接处理请求 -->
+			<!-- DiscardOldestPolicy:抛弃旧的任务；会导致被丢弃的任务无法再次被执行 -->
+			<!-- DiscardPolicy:抛弃当前任务；会导致被丢弃的任务无法再次被执行 -->
+			<bean class="java.util.concurrent.ThreadPoolExecutor$AbortPolicy" />
+		</property>
+	</bean>
+
+</beans>
